@@ -66,7 +66,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          python3 tools/modrepo.py rows . --format known-mods > dist/known_mods.json
-          python3 tools/modrepo.py rows . --format vanilla-plus > dist/vanilla_plus_rows.json
+          python3 tools/modrepo.py rows . --format known-mods --release-tag "${GITHUB_REF_NAME}" > dist/known_mods.json
+          python3 tools/modrepo.py rows . --format vanilla-plus --release-tag "${GITHUB_REF_NAME}" > dist/vanilla_plus_rows.json
           python3 tools/modrepo.py rows . --format server-toml > dist/server_toml_lines.txt
           gh release create "${GITHUB_REF_NAME}" dist/*.zip dist/packs.json dist/SHA256SUMS dist/known_mods.json dist/vanilla_plus_rows.json dist/server_toml_lines.txt --title "${GITHUB_REF_NAME}" --notes-file dist/NOTES.md
