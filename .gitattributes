@@ -1,0 +1,13 @@
+# mod packages hash their bytes (dc-modkit pack is deterministic): one line ending on every checkout
+mods/** text eol=lf
+mods/**/*.png binary
+mods/**/*.jpg binary
+mods/**/*.jpeg binary
+mods/**/*.dat binary
+mods/**/*.dtx binary
+mods/**/*.r16 binary
+mods/**/*.wav binary
+mods/**/*.ogg binary
+generators/** text eol=lf
+generators/**/*.png binary
+tools/*.py text eol=lf

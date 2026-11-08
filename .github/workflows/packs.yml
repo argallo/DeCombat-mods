@@ -1,0 +1,48 @@
+name: packs
+# Every push and pull request: validate, lint and pack every mod under mods/ with dc-modkit (built from the DeCombat
+# revision in modrepo.json). A tag v* publishes a GitHub Release with the zips, packs.json and SHA256SUMS: the
+# sha256 in packs.json is what goes into the directory row and into a server's config.
+on:
+  push:
+    branches: [main, master]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  packs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Read the DeCombat revision
+        id: rev
+        run: echo "rev=$(python3 -c 'import json;print(json.load(open("modrepo.json"))["decombat_rev"])')" >> "$GITHUB_OUTPUT"
+      - name: Install Rust
+        run: rustup toolchain install stable --profile minimal && rustup default stable
+      - name: Cache dc-modkit
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/dc-modkit
+          key: dc-modkit-${{ runner.os }}-${{ steps.rev.outputs.rev }}
+      - name: Build dc-modkit
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: cargo install --git https://github.com/argallo/DeCombat --rev "${{ steps.rev.outputs.rev }}" dc-modkit --locked
+      - name: Build the packs
+        run: python3 tools/modrepo.py build . --modkit ~/.cargo/bin/dc-modkit
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packs
+          path: dist/
+      - name: Publish the release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 tools/modrepo.py rows . --format known-mods > dist/known_mods.json
+          python3 tools/modrepo.py rows . --format vanilla-plus > dist/vanilla_plus_rows.json
+          python3 tools/modrepo.py rows . --format server-toml > dist/server_toml_lines.txt
+          gh release create "${GITHUB_REF_NAME}" dist/*.zip dist/packs.json dist/SHA256SUMS dist/known_mods.json dist/vanilla_plus_rows.json dist/server_toml_lines.txt --title "${GITHUB_REF_NAME}" --notes-file dist/NOTES.md
