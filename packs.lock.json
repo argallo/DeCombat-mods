@@ -1,0 +1,390 @@
+{
+  "version": 1,
+  "note": "written by modrepo.py lock from a trusted local build; the workflow fails when its build hashes differently",
+  "packs": [
+    {
+      "id": "case_reel",
+      "version": "0.1.1",
+      "sha256": "d6c491bbb26180afed35f6b6a046c92ccff2da97f4116122c48767ddd5bc8a99",
+      "size": 15774
+    },
+    {
+      "id": "inspect_g36e_l96a1",
+      "version": "0.3.3",
+      "sha256": "bc665d77dcac7d1552b316a27bc820a0a4ea20975cdf1c135b0c86dedf1386d0",
+      "size": 109604
+    },
+    {
+      "id": "variant_abyss_aug_a1",
+      "version": "0.1.0",
+      "sha256": "ea46a208cc582f4d828f9ea47af2ba8bc2449125322c2e3ccd62bc5fba98e9c2",
+      "size": 2169197
+    },
+    {
+      "id": "variant_art_deco_m1911",
+      "version": "0.1.0",
+      "sha256": "bfdaf869535e4eb8994ad1749ada96965f1574082faed832f6b997fd7d178ee7",
+      "size": 1161762
+    },
+    {
+      "id": "variant_aurora_svd",
+      "version": "0.1.0",
+      "sha256": "449c179bef8630969adcf00ba0b3bc5777ac57b3b608a1f85002650f31a16bd5",
+      "size": 1118356
+    },
+    {
+      "id": "variant_autumn_fall_m24",
+      "version": "0.1.0",
+      "sha256": "0f66b14ab284820833d55cabbf3803f271923119c10a1bf11428df3dc3cd806e",
+      "size": 1113168
+    },
+    {
+      "id": "variant_big_banana_m107cq",
+      "version": "0.1.0",
+      "sha256": "02d596d974cfd2e056685dc1da49c4a76aab7c4f559c91361d5ae184292636d9",
+      "size": 1118651
+    },
+    {
+      "id": "variant_black_opal_usp",
+      "version": "0.1.0",
+      "sha256": "1d5a5ff844774f548f51822d6c61cd891d8f7b297850a679a74248cb7dfcceac",
+      "size": 1115685
+    },
+    {
+      "id": "variant_blood_moon_p226",
+      "version": "0.1.0",
+      "sha256": "7d04f7b7b998656b3522bb00f18f7e6365d7a283c05350c91618fb54ad76fc7b",
+      "size": 2160014
+    },
+    {
+      "id": "variant_boneyard_l115a2",
+      "version": "0.1.0",
+      "sha256": "2f0c1aef0194a847d58ebf80ec30ba351aa6fc967a8999abba810ba46a5ca8cc",
+      "size": 1136718
+    },
+    {
+      "id": "variant_bubble_wrap_minimi",
+      "version": "0.1.0",
+      "sha256": "986c050c77dd4a4b6e58620495d44f2e1a34f73edb47e22c61381eb444528627",
+      "size": 1151907
+    },
+    {
+      "id": "variant_bubblegum_sprinkles_famas",
+      "version": "0.1.0",
+      "sha256": "371155d462940234177ad87b58ef52fcf1552a24910b084942df32a728ae01c2",
+      "size": 1141286
+    },
+    {
+      "id": "variant_candy_corn_g18",
+      "version": "0.1.0",
+      "sha256": "27f9a657424a9455deece175853b6e51524fd9d92a2558ca7bbeb336022a029a",
+      "size": 1105575
+    },
+    {
+      "id": "variant_candy_g36e",
+      "version": "0.1.1",
+      "sha256": "b643f95807365094e98bbc485ed3819be2a6422ca6ceb130b4b4d1b679d314d2",
+      "size": 1073938
+    },
+    {
+      "id": "variant_carbon_venom_m417",
+      "version": "0.1.0",
+      "sha256": "77b09ec099f22626d5780e29d3308bb050be2fbe88735c33b4cd767c7305dda6",
+      "size": 2193043
+    },
+    {
+      "id": "variant_clockwork_r870",
+      "version": "0.1.0",
+      "sha256": "a91a38ff4d4fc985adb766718730402865988957d464899b557b37ab14232796",
+      "size": 1124427
+    },
+    {
+      "id": "variant_comic_pop_mp5",
+      "version": "0.1.0",
+      "sha256": "b5c72fc57cb503cfc57320f984f864138c38758ad073e02fe9fc9c3249529147",
+      "size": 1142076
+    },
+    {
+      "id": "variant_cotton_candy_k7",
+      "version": "0.1.0",
+      "sha256": "9dcdd96d593a70ba55d7dbcacbbec1f6ec227f23b6a9839f24ee4c29d03a9500",
+      "size": 1223016
+    },
+    {
+      "id": "variant_crown_jewels_l85a1",
+      "version": "0.1.0",
+      "sha256": "d54c9665e9a0145d0f31ae6ea9c0efad4e6884422377235b9edaa7feee4a1f7e",
+      "size": 2226657
+    },
+    {
+      "id": "variant_disco_fever_uzi",
+      "version": "0.1.0",
+      "sha256": "cb825cf8a7260c85a4f15062d427b4c93eda3c1042618ad121180838110bde4a",
+      "size": 2200234
+    },
+    {
+      "id": "variant_dragon_scale_spas12",
+      "version": "0.1.0",
+      "sha256": "cb5fca499c0152e36911c9474151cf12b6100587c1d4cddd1a9c553606496b0b",
+      "size": 2227444
+    },
+    {
+      "id": "variant_egg_hunt_m32",
+      "version": "0.1.0",
+      "sha256": "710cb0b5cb560050691d11aac719c9ad5453ee499c4c7a8c802d675443172099",
+      "size": 1168227
+    },
+    {
+      "id": "variant_extra_pepperoni_p90",
+      "version": "0.1.0",
+      "sha256": "60374fba90b747747541228601e3c8c0f9f2460744abe15659ba50adb0d30e5d",
+      "size": 1141786
+    },
+    {
+      "id": "variant_folk_bloom_pp19",
+      "version": "0.1.0",
+      "sha256": "4128a88a9bba2b0b3d7edc456da4a90d4a95906f414a58caefe84282814ecaa4",
+      "size": 1113013
+    },
+    {
+      "id": "variant_frostbite_deagle",
+      "version": "0.1.0",
+      "sha256": "38362ebec823b61a259f2cb4db7b76acab9f77b85b6c2b11a6c21e0f0c67d9ce",
+      "size": 2225334
+    },
+    {
+      "id": "variant_galaxy_g36e",
+      "version": "0.1.2",
+      "sha256": "61192887593c95e3589b9eb9a5482a0674a645cc9c3f52c0dc49b53d99e96cc6",
+      "size": 1308851
+    },
+    {
+      "id": "variant_glitch_mp7",
+      "version": "0.1.0",
+      "sha256": "8d11394f3c4b2a0f2b358017cec1e3d3e0b1f1bf6abd6e5ea89cb58f726d6c71",
+      "size": 2255643
+    },
+    {
+      "id": "variant_gold_rush_anaconda",
+      "version": "0.1.0",
+      "sha256": "7201598441ee9622bb0b57e45472ce4e28ef0da93953bf65b62b3acf98175d44",
+      "size": 2193152
+    },
+    {
+      "id": "variant_grand_finale_law",
+      "version": "0.1.0",
+      "sha256": "4f45d62cd8b2da6cbfd463d737adb34c61cc6e12f3d7678d6d80ff902b036aa7",
+      "size": 2211103
+    },
+    {
+      "id": "variant_grandma_s_quilt_rpk",
+      "version": "0.1.0",
+      "sha256": "c18a296992c2faf25a5493c92fc1ca34f18bc093e2f4fef60c98a4b84f68c632",
+      "size": 1094474
+    },
+    {
+      "id": "variant_gummy_bears_ak74u",
+      "version": "0.1.0",
+      "sha256": "f2fb66bfd65b7d69169748a3028247e0666f4bc4c514a7f853d21e15d3629e22",
+      "size": 1163363
+    },
+    {
+      "id": "variant_hazard_rave_m60",
+      "version": "0.1.0",
+      "sha256": "e8bea4883e26000e7de6560cb3d3390b10eb91109c69a0ef91bf189fb5523935",
+      "size": 2233174
+    },
+    {
+      "id": "variant_honey_heist_ump",
+      "version": "0.1.0",
+      "sha256": "c7b5366962cce2010d9f7fcd3594eca6eabbc06a061b33278068887106c6c227",
+      "size": 1133878
+    },
+    {
+      "id": "variant_hot_sauce_mac10",
+      "version": "0.1.0",
+      "sha256": "73b4668b095f49ed24eaab30121237fd6b43cb113678f8d2c762ffb444673e57",
+      "size": 1129152
+    },
+    {
+      "id": "variant_inferno_minigun",
+      "version": "0.1.0",
+      "sha256": "8c2fa5a7a99e5bcf4d3201e4f77fd03d822fb8354cc6432d0e96ab0155e9c8a7",
+      "size": 1147554
+    },
+    {
+      "id": "variant_kintsugi_ak74m",
+      "version": "0.1.0",
+      "sha256": "4a68c59f2fd8c97e0d4d4e060fb079fc89aa51235e05ef217c2ff02aa637a8f2",
+      "size": 1145858
+    },
+    {
+      "id": "variant_kitty_chaos_saiga",
+      "version": "0.1.0",
+      "sha256": "f6b75ca8c56fb5a2325b5f27f41466c531edc404ccc1b1a2e6b5f098ca505f1f",
+      "size": 1142792
+    },
+    {
+      "id": "variant_koi_pond_aug_a3",
+      "version": "0.1.0",
+      "sha256": "c641e79c570ebea69b6110795152c23acaf651a0c77ff60c57d2979d96efbe06",
+      "size": 1150821
+    },
+    {
+      "id": "variant_liquid_mercury_psg1",
+      "version": "0.1.0",
+      "sha256": "e53c8776ffba71bed09a08a0468b57fc89f3d4db330be903ddc163d5836b932a",
+      "size": 1141970
+    },
+    {
+      "id": "variant_macaw_k3",
+      "version": "0.1.0",
+      "sha256": "1f300240a88bc80a25f41da432bc8bd9a34955b23bb5f47479814b18c82719aa",
+      "size": 1204319
+    },
+    {
+      "id": "variant_marshmallow_roast_flamethrower",
+      "version": "0.1.0",
+      "sha256": "6376cf453aec19e4f8c8456fd404debb82b1706fa15093d76f945be40ff6b3ad",
+      "size": 1141331
+    },
+    {
+      "id": "variant_melting_chocolate_sg556",
+      "version": "0.1.0",
+      "sha256": "e98a1d57ff357cca78510f380b4717669aa05204c59ea6d42fdede9477a7f964",
+      "size": 1068611
+    },
+    {
+      "id": "variant_mirage_tar21",
+      "version": "0.1.0",
+      "sha256": "7e313da73e0bced365dead6120bd79c98029968789bc06f08df3fe021449b043",
+      "size": 1143636
+    },
+    {
+      "id": "variant_molten_core_ak47",
+      "version": "0.1.0",
+      "sha256": "3bfbd45439ae5f5502aba54d8f3f45c727ca439367465f6192fc84011f81df80",
+      "size": 1163956
+    },
+    {
+      "id": "variant_neon_leopard_k2",
+      "version": "0.1.0",
+      "sha256": "dd112fe9d97af3ce98f0c8046570343c901676ee953b6c970f85a62f7f596710",
+      "size": 1081158
+    },
+    {
+      "id": "variant_neon_tiger_mk48",
+      "version": "0.1.0",
+      "sha256": "a70b2ed2664d7d50bbb897f73b46b54c9b2b73b805338bee05f4b380197ed9b4",
+      "size": 2146043
+    },
+    {
+      "id": "variant_neon_venom_skorpion",
+      "version": "0.1.0",
+      "sha256": "62d1a1432b131618689e2c00f51816eec362a4e053e9949e7bc3d2504558b344",
+      "size": 2173161
+    },
+    {
+      "id": "variant_overclocked_m416",
+      "version": "0.1.0",
+      "sha256": "c929f97514b6e44ca717d6e6787e61c2521544d031d24625c4a38771e0bb77e6",
+      "size": 2108279
+    },
+    {
+      "id": "variant_party_popper_rpg7",
+      "version": "0.1.0",
+      "sha256": "5160ab0a886f1eb6fa725987d2c52c166bbc98b0c5335d07a7a30c375998885c",
+      "size": 2160788
+    },
+    {
+      "id": "variant_peppermint_k5",
+      "version": "0.1.0",
+      "sha256": "fc79d81880b52e78c45e3e585e574813aed36dd56aa10e6e7057711a6b599cc8",
+      "size": 1157909
+    },
+    {
+      "id": "variant_pixel_arcade_m6a2",
+      "version": "0.1.0",
+      "sha256": "57f1a5806903307fb7bc48fee6d79e1b57cca6c0949588c1ddc7b899f0716c41",
+      "size": 1054744
+    },
+    {
+      "id": "variant_prism_scar",
+      "version": "0.2.1",
+      "sha256": "1b7091f27ce0af593d631a1b682b669b702a18f2f3f06bf306467c3888d5e410",
+      "size": 1291346
+    },
+    {
+      "id": "variant_python_sr25",
+      "version": "0.1.0",
+      "sha256": "f577e6de01e7b1838c6063bfeb4661fa7a35d82d253ee1e710ca897f740cdf88",
+      "size": 1160146
+    },
+    {
+      "id": "variant_royal_marble_g23",
+      "version": "0.1.0",
+      "sha256": "35449011c1a72597858090e875f358f13a432a3270f259764e66c4be27ce8efd",
+      "size": 1160733
+    },
+    {
+      "id": "variant_rubber_ducky_m92f",
+      "version": "0.1.0",
+      "sha256": "66c477251bd0e2d7c4423caa56439070209a4d9af2920249ab1ab8af32fba5dc",
+      "size": 1090819
+    },
+    {
+      "id": "variant_shark_week_m590",
+      "version": "0.1.0",
+      "sha256": "b8ee0a4e4b2ffca4582c3721aa02007d0f0d0f0c24794f4817a75e3f91a8d363",
+      "size": 1112490
+    },
+    {
+      "id": "variant_stained_glass_msg90",
+      "version": "0.1.0",
+      "sha256": "6b09837d588d230178d590adb5346a71b644732e372c8c6a3c721a3f69dd1bf0",
+      "size": 2198451
+    },
+    {
+      "id": "variant_swiss_cheese_sg550",
+      "version": "0.1.0",
+      "sha256": "9156783655f5fa833e3148d1eb52fc1a4ad6250afc22f8777fb569a9a32cbd58",
+      "size": 1113577
+    },
+    {
+      "id": "variant_synthwave_m4a1",
+      "version": "0.1.0",
+      "sha256": "008a0073c6bffef2fa0c36a5ad482df2877b7978b0c106a0d9b6cf48a45f7386",
+      "size": 2124430
+    },
+    {
+      "id": "variant_thunderstorm_m14",
+      "version": "0.1.0",
+      "sha256": "ba087bec7e9496d1357a7ac84b02452809533df854d9add8e8f84dbd2c7bb3db",
+      "size": 2155888
+    },
+    {
+      "id": "variant_tie_dye_k1a",
+      "version": "0.1.0",
+      "sha256": "f5abed3a6418b7c4f8202a6e94e4790a72e6f13945654e23885ea45cc7af8f93",
+      "size": 1172905
+    },
+    {
+      "id": "variant_tiger_l96a1",
+      "version": "0.1.1",
+      "sha256": "772190d229b2b258d15dfcdaab2bb15cc0e30b9bbea1948c535d818eed955111",
+      "size": 1079955
+    },
+    {
+      "id": "variant_toxic_l96a1",
+      "version": "0.1.2",
+      "sha256": "93712d3ecec6478eb8bedc74c563a5ec50a9ea2e31d7b210f6191d0ac0d966f6",
+      "size": 1475765
+    },
+    {
+      "id": "variant_watermelon_smash_double_barrel",
+      "version": "0.1.0",
+      "sha256": "874d9d57685bd97f2d607868cd1b6847a240c117ba93588b465f4372013e4eec",
+      "size": 1125363
+    }
+  ]
+}

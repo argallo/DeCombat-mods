@@ -4,19 +4,21 @@
 A mod lives in its own git repository, not in the game's. This tool makes such a repository, keeps the packs in it
 buildable with `dc-modkit`, and prints the rows the directory files and a server's config want:
 
-    python3 tools/modrepo.py init <dir> --github <owner/repo> [--name <title>]
+    python3 tools/modrepo.py init <dir> --github <owner/repo> --decombat-rev <DeCombat tag> [--name <title>]
     python3 tools/modrepo.py add <repo> <mod folder>... [--generator <dir>]
     python3 tools/modrepo.py build <repo> [--modkit <dc-modkit exe>] [--rom <client folder>] [--only <id>...]
     python3 tools/modrepo.py rows <repo> --format vanilla-plus|known-mods|server-toml|catalog-toml
     python3 tools/modrepo.py verify <repo> --against <json file>...
+    python3 tools/modrepo.py lock <repo>
     python3 tools/modrepo.py selftest
 
 Layout of a repository made by `init`:
 
-    modrepo.json                the repository's name, its GitHub `owner/repo`, the DeCombat revision its CI builds dc-modkit from
+    modrepo.json                the repository's name, its GitHub `owner/repo`, the DeCombat tag its CI builds dc-modkit from
     mods/<id>/                  one pack per folder: manifest.json, main.lua, assets/, screenshots/ (what `dc-modkit scaffold` writes)
     generators/<id>/            optional: the scripts that drew a pack's own art (so the art is reproducible)
     dist/                       `build` output, ignored by git: <id>-<version>.zip, packs.json, SHA256SUMS
+    packs.lock.json             `lock` output, committed: the hashes a trusted local build gave; CI fails when its build differs
     tools/modrepo.py            this file, so the repository builds without the game's checkout
     .github/workflows/packs.yml lint + validate + pack on every push; a `v*` tag publishes a release with the zips
 
@@ -26,7 +28,9 @@ id, version, sha256, size, kind, tags, source_repo. `rows` turns that file into 
 (`community/vanilla_plus.json`), the known-mods row (`community/community.json`), or `[[mods.set]]` / `[[mods.catalog]]`
 blocks for a server's `server.toml`. `verify` compares the hashes in `dist/packs.json` with the rows of one or more
 directory files and exits 1 on a difference: the servers and the review list are keyed by hash, so a pack that does
-not reproduce its listed hash is a pack that was changed after review.
+not reproduce its listed hash is a pack that was changed after review. `lock` copies `dist/packs.json` to
+`packs.lock.json`; the generated workflow verifies its own build against that file, so a dc-modkit at another revision
+that packs different bytes fails the run instead of publishing hashes nobody reviewed.
 
 `dc-modkit` is found through `--modkit`, the `DC_MODKIT` environment variable, `dc-modkit` on PATH, or (inside a
 DeCombat checkout) `cargo run -q -p dc-modkit --`. The generated workflow installs it with `cargo install --git`.
@@ -45,6 +49,7 @@ import tarfile
 import tempfile
 
 DECOMBAT_GIT = "https://github.com/argallo/DeCombat"
+BRANCH_NAMES = {"main", "master", "latest", "HEAD", "develop", "dev", "trunk"}
 MOD_ID = re.compile(r"^[a-z][a-z0-9_]{2,63}$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
@@ -89,9 +94,26 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Read the DeCombat revision
+      - name: Resolve the DeCombat revision (a tag or a commit of __DECOMBAT_GIT__, never a branch)
         id: rev
-        run: echo "rev=$(python3 -c 'import json;print(json.load(open("modrepo.json"))["decombat_rev"])')" >> "$GITHUB_OUTPUT"
+        run: |
+          rev=$(python3 -c 'import json;print(json.load(open("modrepo.json"))["decombat_rev"])')
+          echo "modrepo.json decombat_rev = $rev"
+          case "$rev" in
+            main|master|latest|HEAD|develop|dev|trunk)
+              echo "::error::decombat_rev '$rev' is a branch name: cargo install --rev needs a commit and a branch moves; pin a tag (git ls-remote --tags __DECOMBAT_GIT__) or a 40-hex commit"
+              exit 1 ;;
+          esac
+          if printf '%s' "$rev" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo "kind=rev" >> "$GITHUB_OUTPUT"
+          elif git ls-remote --exit-code --tags __DECOMBAT_GIT__ "refs/tags/$rev" >/dev/null 2>&1; then
+            echo "kind=tag" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::decombat_rev '$rev' is neither a tag of __DECOMBAT_GIT__ nor a 40-hex commit. The tags there:"
+            git ls-remote --tags __DECOMBAT_GIT__ | sed 's#.*refs/tags/##' | grep -v '{}$' | tail -12
+            exit 1
+          fi
+          echo "rev=$rev" >> "$GITHUB_OUTPUT"
       - name: Install Rust
         run: rustup toolchain install stable --profile minimal && rustup default stable
       - name: Cache dc-modkit
@@ -102,9 +124,16 @@ jobs:
           key: dc-modkit-${{ runner.os }}-${{ steps.rev.outputs.rev }}
       - name: Build dc-modkit
         if: steps.cache.outputs.cache-hit != 'true'
-        run: cargo install --git __DECOMBAT_GIT__ --rev "${{ steps.rev.outputs.rev }}" dc-modkit --locked
+        run: cargo install --git __DECOMBAT_GIT__ --${{ steps.rev.outputs.kind }} "${{ steps.rev.outputs.rev }}" dc-modkit --locked
       - name: Build the packs
         run: python3 tools/modrepo.py build . --modkit ~/.cargo/bin/dc-modkit
+      - name: The hashes are the locked ones (packs.lock.json, written by `modrepo.py lock` after a trusted local build)
+        run: |
+          if [ -f packs.lock.json ]; then
+            python3 tools/modrepo.py verify . --against packs.lock.json --all
+          else
+            echo "::warning::no packs.lock.json: the hashes of this build were not checked against a local build (run modrepo.py lock and commit it)"
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: packs
@@ -250,13 +279,17 @@ def cmd_init(a):
     if os.path.isdir(repo) and os.listdir(repo) and not a.force:
         die(f"{repo} exists and is not empty (use --force to add the files anyway)")
     url = github_url(a.github)
+    rev = a.decombat_rev.strip()
+    if rev in BRANCH_NAMES or not re.match(r"^(v?[0-9][A-Za-z0-9._-]*|[0-9a-f]{40})$", rev):
+        die(f"--decombat-rev {rev!r}: pin a tag of the DeCombat repository (`git ls-remote --tags {DECOMBAT_GIT}`, e.g. "
+            "v0.5.0-beta6) or a 40-hex commit; a branch moves and cargo install --rev does not take one", 2)
     name = a.name or os.path.basename(os.path.normpath(repo))
     os.makedirs(os.path.join(repo, "mods"), exist_ok=True)
     os.makedirs(os.path.join(repo, "generators"), exist_ok=True)
     write_text(os.path.join(repo, "modrepo.json"), json.dumps({
         "name": name,
         "github": url,
-        "decombat_rev": a.decombat_rev,
+        "decombat_rev": rev,
     }, indent=2) + "\n")
     write_text(os.path.join(repo, ".gitattributes"), GITATTRIBUTES)
     write_text(os.path.join(repo, ".gitignore"), GITIGNORE)
@@ -474,7 +507,7 @@ def cmd_rows(a):
 # ---------------------------------------------------------------- verify
 
 def directory_rows(path):
-    """(id, version, sha256) rows of a review list, a community document, a server_list.json or a packs.json."""
+    """(id, version, sha256) rows of a review list, a community document, a server_list.json, a packs.json or a lock."""
     doc = read_json(path)
     rows = []
     for key in ("packs", "known_mods"):
@@ -511,6 +544,19 @@ def cmd_verify(a):
     print(f"\n{ok} same, {diff} different" + (f", {absent} absent" if a.all else ""))
     if diff:
         sys.exit(1)
+
+
+# ---------------------------------------------------------------- lock
+
+def cmd_lock(a):
+    packs = load_packs(a.repo)
+    out = os.path.join(a.repo, "packs.lock.json")
+    write_text(out, json.dumps({
+        "version": 1,
+        "note": "written by modrepo.py lock from a trusted local build; the workflow fails when its build hashes differently",
+        "packs": [{k: p[k] for k in ("id", "version", "sha256", "size")} for p in packs],
+    }, indent=2) + "\n")
+    print(f"{len(packs)} pack(s) locked in {out}")
 
 
 # ---------------------------------------------------------------- selftest
@@ -562,8 +608,13 @@ def cmd_selftest(_a):
         write_text(stub, STUB_MODKIT)
         modkit = f"{sys.executable} -I {stub}"
         repo = os.path.join(tmp, "repo")
-        code, out = run(["init", repo, "--github", "example/packs", "--name", "Example packs"])
+        code, out = run(["init", repo, "--github", "example/packs", "--name", "Example packs", "--decombat-rev", "main"])
+        assert code == 2 and "a branch moves" in out, "a branch name as the pin is refused: " + out
+        code, out = run(["init", repo, "--github", "example/packs", "--name", "Example packs", "--decombat-rev", "v0.5.0-beta6", "--force"])
         assert code == 0, out
+        assert read_json(os.path.join(repo, "modrepo.json"))["decombat_rev"] == "v0.5.0-beta6"
+        wf = open(os.path.join(repo, ".github", "workflows", "packs.yml"), encoding="utf-8").read()
+        assert "is a branch name" in wf and "--${{ steps.rev.outputs.kind }}" in wf
         for f in ("modrepo.json", ".gitattributes", ".gitignore", "README.md", "tools/modrepo.py",
                   ".github/workflows/packs.yml", "generators/README.md"):
             assert os.path.isfile(os.path.join(repo, f)), f
@@ -623,6 +674,16 @@ def cmd_selftest(_a):
         assert out.count("[[mods.set]]") == 2 and "# mods = [{ id = \"camo_x\"" in out, out
         code, out = run(["rows", repo, "--format", "catalog-toml"])
         assert out.count("[[mods.catalog]]") == 1 and "hud_y" in out, out
+        # lock: the lock file verifies clean, and a changed lock is a difference
+        code, out = run(["lock", repo])
+        assert code == 0 and os.path.isfile(os.path.join(repo, "packs.lock.json")), out
+        code, out = run(["verify", repo, "--against", os.path.join(repo, "packs.lock.json"), "--all"])
+        assert code == 0 and "2 same, 0 different, 0 absent" in out, out
+        lock = read_json(os.path.join(repo, "packs.lock.json"))
+        lock["packs"][0]["sha256"] = "a" * 64
+        write_text(os.path.join(repo, "packs.lock.json"), json.dumps(lock))
+        code, out = run(["verify", repo, "--against", os.path.join(repo, "packs.lock.json")])
+        assert code == 1 and "DIFF   camo_x" in out, out
         # verify: same, different, absent
         review = os.path.join(tmp, "vanilla_plus.json")
         write_text(review, json.dumps({"version": 1, "packs": [
@@ -651,7 +712,8 @@ def main(argv=None):
     p.add_argument("dir")
     p.add_argument("--github", help="owner/repo of the repository on GitHub (the packs' source_repo)")
     p.add_argument("--name", help="the repository's title (default: the folder name)")
-    p.add_argument("--decombat-rev", default="master", help="DeCombat git revision the workflow builds dc-modkit from")
+    p.add_argument("--decombat-rev", required=True,
+                   help="the DeCombat tag (or 40-hex commit) the workflow builds dc-modkit from, e.g. v0.5.0-beta6; never a branch")
     p.add_argument("--force", action="store_true")
     p.set_defaults(fn=cmd_init)
     p = sub.add_parser("add", help="copy pack folders into mods/<id> (a clean git copy when tracked)")
@@ -675,6 +737,9 @@ def main(argv=None):
     p.add_argument("--against", nargs="+", required=True, help="vanilla_plus.json, community.json, server_list.json or packs.json files")
     p.add_argument("--all", action="store_true", help="also list rows this repository has no pack for")
     p.set_defaults(fn=cmd_verify)
+    p = sub.add_parser("lock", help="write packs.lock.json from dist/packs.json (commit it; CI verifies against it)")
+    p.add_argument("repo")
+    p.set_defaults(fn=cmd_lock)
     p = sub.add_parser("selftest", help="run the built-in test (no dc-modkit needed)")
     p.set_defaults(fn=cmd_selftest)
     a = ap.parse_args(argv)

@@ -17,9 +17,26 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Read the DeCombat revision
+      - name: Resolve the DeCombat revision (a tag or a commit of https://github.com/argallo/DeCombat, never a branch)
         id: rev
-        run: echo "rev=$(python3 -c 'import json;print(json.load(open("modrepo.json"))["decombat_rev"])')" >> "$GITHUB_OUTPUT"
+        run: |
+          rev=$(python3 -c 'import json;print(json.load(open("modrepo.json"))["decombat_rev"])')
+          echo "modrepo.json decombat_rev = $rev"
+          case "$rev" in
+            main|master|latest|HEAD|develop|dev|trunk)
+              echo "::error::decombat_rev '$rev' is a branch name: cargo install --rev needs a commit and a branch moves; pin a tag (git ls-remote --tags https://github.com/argallo/DeCombat) or a 40-hex commit"
+              exit 1 ;;
+          esac
+          if printf '%s' "$rev" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo "kind=rev" >> "$GITHUB_OUTPUT"
+          elif git ls-remote --exit-code --tags https://github.com/argallo/DeCombat "refs/tags/$rev" >/dev/null 2>&1; then
+            echo "kind=tag" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::decombat_rev '$rev' is neither a tag of https://github.com/argallo/DeCombat nor a 40-hex commit. The tags there:"
+            git ls-remote --tags https://github.com/argallo/DeCombat | sed 's#.*refs/tags/##' | grep -v '{}$' | tail -12
+            exit 1
+          fi
+          echo "rev=$rev" >> "$GITHUB_OUTPUT"
       - name: Install Rust
         run: rustup toolchain install stable --profile minimal && rustup default stable
       - name: Cache dc-modkit
@@ -30,9 +47,16 @@ jobs:
           key: dc-modkit-${{ runner.os }}-${{ steps.rev.outputs.rev }}
       - name: Build dc-modkit
         if: steps.cache.outputs.cache-hit != 'true'
-        run: cargo install --git https://github.com/argallo/DeCombat --rev "${{ steps.rev.outputs.rev }}" dc-modkit --locked
+        run: cargo install --git https://github.com/argallo/DeCombat --${{ steps.rev.outputs.kind }} "${{ steps.rev.outputs.rev }}" dc-modkit --locked
       - name: Build the packs
         run: python3 tools/modrepo.py build . --modkit ~/.cargo/bin/dc-modkit
+      - name: The hashes are the locked ones (packs.lock.json, written by `modrepo.py lock` after a trusted local build)
+        run: |
+          if [ -f packs.lock.json ]; then
+            python3 tools/modrepo.py verify . --against packs.lock.json --all
+          else
+            echo "::warning::no packs.lock.json: the hashes of this build were not checked against a local build (run modrepo.py lock and commit it)"
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: packs
