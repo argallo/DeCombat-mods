@@ -37,19 +37,47 @@ jobs:
             exit 1
           fi
           echo "rev=$rev" >> "$GITHUB_OUTPUT"
-      - name: Install Rust
+      - name: dc-modkit, the ModKit asset of the DeCombat release decombat_rev names (checked against its SHA256SUMS)
+        id: modkit
+        run: |
+          set -euo pipefail
+          rev="${{ steps.rev.outputs.rev }}"
+          zip="DeCombat-ModKit-linux-x86_64-$rev.zip"
+          base="https://github.com/argallo/DeCombat/releases/download/$rev"
+          mkdir -p "$HOME/modkit"
+          cd "$HOME/modkit"
+          if [ "${{ steps.rev.outputs.kind }}" = tag ] && curl -fsSL -o SHA256SUMS "$base/SHA256SUMS" && curl -fsSL -o "$zip" "$base/$zip"; then
+            # a zip that does not match the release's own checksum fails the run; it never falls back
+            awk -v z="$zip" '$2 == z' SHA256SUMS > want.sha
+            [ -s want.sha ] || { echo "::error::$zip is not in the SHA256SUMS of release $rev"; exit 1; }
+            sha256sum -c want.sha
+            unzip -q -o "$zip" -d x
+            exe=$(find "$PWD/x" -type f -name dc-modkit | head -n 1)
+            chmod +x "$exe"
+            echo "dc-modkit from the ModKit asset of $rev: $exe"
+            echo "exe=$exe" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::no ModKit asset ($zip) on release $rev of https://github.com/argallo/DeCombat (a release before ModKit, or a commit pin): dc-modkit is BUILT FROM SOURCE below, which takes several minutes"
+            echo "exe=" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Install Rust (only without the ModKit asset)
+        if: steps.modkit.outputs.exe == ''
         run: rustup toolchain install stable --profile minimal && rustup default stable
-      - name: Cache dc-modkit
+      - name: Cache dc-modkit (only without the ModKit asset)
+        if: steps.modkit.outputs.exe == ''
         id: cache
         uses: actions/cache@v4
         with:
           path: ~/.cargo/bin/dc-modkit
           key: dc-modkit-${{ runner.os }}-${{ steps.rev.outputs.rev }}
-      - name: Build dc-modkit
-        if: steps.cache.outputs.cache-hit != 'true'
+      - name: Build dc-modkit from source (only without the ModKit asset)
+        if: steps.modkit.outputs.exe == '' && steps.cache.outputs.cache-hit != 'true'
         run: cargo install --git https://github.com/argallo/DeCombat --${{ steps.rev.outputs.kind }} "${{ steps.rev.outputs.rev }}" dc-modkit --locked
       - name: Build the packs
-        run: python3 tools/modrepo.py build . --modkit ~/.cargo/bin/dc-modkit
+        run: |
+          exe="${{ steps.modkit.outputs.exe }}"
+          [ -n "$exe" ] || exe="$HOME/.cargo/bin/dc-modkit"
+          python3 tools/modrepo.py build . --modkit "$exe"
       - name: The hashes are the locked ones (packs.lock.json, written by `modrepo.py lock` after a trusted local build)
         run: |
           if [ -f packs.lock.json ]; then
